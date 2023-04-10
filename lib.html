@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Books API Search</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .book-result {
+            margin-bottom: 20px;
+            display: flex;
+        }
+        .book-thumbnail {
+            max-width: 200px;
+            max-height: 250px;
+            margin-right: 10px;
+        }
+        .book-details {
+            flex-grow: 1;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: white;
+
+        }
+        .navbar ul {
+            display: flex;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .navbar li {
+            margin-right: 10px;
+        }
+        .navbar a {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: lightgrey;
+            color: black;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px; 
+            outline: none; 
+            border: 1px solid #000;
+
+        }
+        .navbar a:hover {
+            background-color: darkgrey;
+        }
+       
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>Google Books API Book Search</h1>
+        <ul>
+            <li><a href="#" class="btn">Search</a></li>
+            <li><a href="owned_lib.html" class="btn">Library</a></li>
+            <li><a href="tbr_lib.html" class="btn">TBR</a></li>
+            <li><a href="database_display.html" class="btn">DBMS</a></li>
+
+        </ul>
+    </div>
+    <form id="search-form">
+        <input type="text" id="search-input" placeholder="Enter a book title or author">
+        <button type="submit">Search</button>
+    </form>
+    <div id="search-results"></div>
+
+    <script>
+        var BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
+
+        $('#search-form').on('submit', function(event) {
+            event.preventDefault();
+            var query = $('#search-input').val();
+            searchBook(query);
+        });
+
+        function searchBook(query) {
+            var params = {
+                'q': query, 
+                'maxResults': 20 
+            };
+
+        function truncateText(text, wordCount) {
+            var words = text.trim().split(' ');
+            if (words.length > wordCount) {
+                return words.slice(0, wordCount).join(' ') + '...';
+            } else {
+                return text;
+            }
+        };
+
+            $.get(BASE_URL, params, function(data) {
+                var books = data.items || [];
+                var resultsContainer = $('#search-results');
+                resultsContainer.empty();
+
+                if (books.length > 0) {
+                    $('<h2>').text('Search results for "' + query + '":').appendTo(resultsContainer);
+                    $.each(books, function(index, item) {
+                        var book = {
+                            'title': item.volumeInfo.title || 'N/A',
+                            'authors': item.volumeInfo.authors || 'N/A',
+                            'description': item.volumeInfo.description || 'N/A',
+                            'thumbnail': item.volumeInfo.imageLinks ? item.volumeInfo.imageLinks.thumbnail || 'N/A' : 'N/A'
+                        };
+                        var bookResult = $('<div>').addClass('book-result')
+                            .append($('<img>').addClass('book-thumbnail').attr('src', book.thumbnail))
+                            .append($('<div>').addClass('book-details')
+                                .append($('<h2>').text('Title: ' + book.title))
+                                .append($('<h3>').text('Authors: ' + book.authors))
+                                .append($('<p>').text('Description: ' + truncateText(book.description, 50)))
+                                .append($('<button>').text('Add to library').addClass('add-to-owned-btn'))) 
+                            .appendTo(resultsContainer);
+                    });
+                } else {
+                    $('<p>').text('No results found for "' + query + '"').appendTo(resultsContainer);
+                }
+            }).fail(function() {
+                console.error('Failed to fetch book data.');
+            });
+        }
+    </script>
+</body>
+</html> 
