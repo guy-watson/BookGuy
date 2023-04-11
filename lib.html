@@ -47,7 +47,16 @@
         .navbar a:hover {
             background-color: #dcdcdc;
         }
-       
+
+        #scanner-container {
+            position: flex;
+        }
+
+        #video {
+            max-width: 600px;
+            max-height: 300px;
+        }
+
     </style>
 </head>
 <body>
@@ -67,8 +76,11 @@
         <button type="button" id="scan-button">Scan</button>
 
     </form>
-    <div id="scanner-container"></div> <!-- Added container for the scanner stream -->
-    <div id="search-results"></div>
+    <div id="scanner-container">
+        <video id="video" autoplay></video>
+        <div id="search-results"></div>
+
+    </div> 
 
     <script>
         var BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
@@ -101,6 +113,8 @@
                     var scannedISBN = result.codeResult.code; // Extract the scanned barcode data
                     $('#search-input').val(scannedISBN); // Set the scanned barcode data as the search query
                     searchBook(scannedISBN); // Trigger book search based on the scanned barcode data
+                    $('#video').remove(); // Remove the video element from the DOM
+
                 });
             });
         });
